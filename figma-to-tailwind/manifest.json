@@ -1,0 +1,11 @@
+{
+  "name": "figma-taliwind-Ahmad-Office",
+  "id": "1027293731621136755",
+  "api": "1.0.0",
+  "main": "./src/main.js",
+  "ui": "./src/ui/ui.html",
+  "editorType": [
+    "figma",
+    "figjam"
+  ]
+}
