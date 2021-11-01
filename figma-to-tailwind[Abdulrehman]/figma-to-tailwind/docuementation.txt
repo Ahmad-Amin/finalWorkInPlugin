@@ -1,0 +1,264 @@
+Figma to Tailwind Plugin
+
+figma-to-tailwind is a plugin that converts figma design to HTML + tailwind css code, that can be readily used in projects.
+
+What the plugin offers
+Plugin provides the users with following features
+1. Adding responsive classes(breakpoints) other custom classes to any selected node from figma. 
+2. Changing the tag name of any selected node that will be shown in HTML code.
+3. Integrations 
+4. (TODO)
+
+Architecture 
+The plugin takes in a node as input and generates the code for that node along with its child nodes.
+If something is selected from figma, plugin treats that selection as the root node. If nothing is
+selected, then the page node is treated as the root node and all other nodes as its children.
+
+All the nodes in selected figma structure are traversed, maintaining the parent-child
+relations among the nodes. At each step, a single line of code is produced and appended
+to a global string. When all children of one particular node are traversed, the closing tags are appended 
+at their appropriate positions. Proceeding in this way, the plugin outputs complete HTML structure at the end.
+Everytime user selects something different, new code is generated and rendered on the plugin's UI.
+
+After the code is generated, plugin offers some controls to enhance the code according to user's needs. 
+Firstly, user can change the tagname of any node. For this, user selects a tag name from the tab and upon clicking
+the update button, the tag is replaced in the code. Secondly, user can add classes to any selected node. These classes can
+either be breakpoint-classes(from the Breakpoints tab), or basic tailwind classes(from Custom Classes tab).
+
+Converting the values from figma to tailwind CSS
+For conversion of values from figma to tailwind CSS, the plugin uses conversion tables, that map values to respective tailwind classes. 
+Pixel values e.g. height and width, colors, font-sizes, font-weights, alignments(flex values) etc have their conversion tables.
+Functions exist for these attributes that perform the conversion, and generate tailwind classes that are then placed in the respective code lines.
+
+
+API documentation:
+
+-- MAIN --
+
+createTree
+
+Main function that reads the figma node structure and returns and generates the code.
+
+Parameters
+    node  -  a figma node
+    level  -  integer value that specifies the depth of a particular node in the tree.
+              (Initial function call alwaws has 0 value for level)
+
+
+figmaToTailwind
+
+Calls the createTree function and returns the code that is generated from it.
+
+Parameters  
+    selection  -  node object selected from figma
+
+Returns
+    string  -  code that is generated from the createTree function.    
+
+getFractionalWidth
+
+Calculates the fractional width of a node in that has width greater than 324px.
+
+Parameters
+    node  -  a figma node
+
+Returns
+    string  - tailwind class in the format w-1/2
+
+getBGColor
+
+    Converts the hex value of colors to tailwind classes
+
+Parameters
+    node  -  a figma node
+
+Returns
+    string  - tailwind class in the format bg-green-500
+
+getWidth
+
+Calculates the width of a node if it is less than 324px.
+
+Parameters
+    node  -  a figma node
+
+Returns
+    string  - tailwind class in the format w-12
+
+
+getHeight
+
+Calculates the height of a node if it is less than 324px.
+
+Parameters
+    node  -  a figma node
+
+Returns
+    string  - tailwind class in the format h-12
+
+-- LAYOUT -- 
+getLayout
+
+Gives the flex properties of a node if it has autolayout.
+
+If the autolayout has vertical direction, function returns flex-col.
+If the autolayout has horizontal direction, function returns only flex.
+
+Parameters
+    node  -  a figma node
+
+Returns
+    empty string - if node has no autolayout
+    string  -  tailwind classes 'flex flex-col items-center justify-center'
+
+getValues
+
+Fetches the layout properties from the node and returns them in an object.
+
+Parameters
+    node  -  a figma node
+
+Returns
+    object  -  object containing the layout properties
+
+
+getTailWindClasses
+
+Converts layout properties from a figma node to a string of respective tailwind classes.
+getPadding
+
+Parameters
+    object  -  contains the layout properties of a figma node
+
+Returns
+    string  -  tailwind classes in the 
+               format 'flex flex-row justify-start items-center pt-6 pr-8 pb-0 pl-8'
+
+getTailWindClasses
+
+Calculates the spacing between elements if the parent node has autolayout.
+
+Parameters
+    node  -  a figma node
+
+Returns
+    string  -  tailwind class of format 'mb-4', if the autolayout has vertical direction
+               tailwind class of format 'mr-4', if the autolayout has horizontal direction
+
+
+getPadding
+
+Calculates the vertical padding (py) and horizontal padding (px) of a node.
+
+Parameters
+    node  -  a figma node
+
+Returns
+    string  -  tailwind classes in the format 'px-12 py-12'
+
+
+-- TEXT -- 
+
+textClasses
+
+Maps and returns attributes for text nodes. The three attributes are text-color, font-size, font-weight.
+
+Parameters
+    node  -  a figma node
+
+Returns
+    string  -  tailwind classes in the format 'text-black text-sm font bold'
+
+-- BORDER --
+
+getBorderRadiusClass
+
+Maps the border radius pixel-value to tailwind and returns a tailwind class.
+
+Parameters
+    node  -  a figma node
+
+Returns
+    If all four corners have equal radii
+        string  -  tailwind class in the format 'rounded-12' 
+    If all four corners have unequal radii
+        string  -  tailwind class in the format 'rounded-tl-12 rounded-tr-12 rounded-br-12 rounded-bl-12' 
+
+
+getBorderWidthClass
+
+Calculates the border width of a particular node. 
+
+Parameters
+    node  -  a figma node
+
+Returns
+    If node has a border applied
+        empty string  -  
+    If node has a border
+        string  -  tailwind class in the format 'border-4'
+
+
+-- FUNCTIONS FOR MAKING CHANGES FROM THE UI -- 
+
+iter
+
+A general function that iterates over a map (obj) and returns the entry where the id 
+of the node matches the key in the map.
+
+Parameters
+    obj  -  an object
+    node  -  a figma node
+
+Returns
+        string  -  all breakpoint classes entered in the UI for the input node.
+
+
+addBreakpointsClasses
+
+Creates an entry in the map 'changedBreakpoints' containing the breakpoint classes for a node
+that are entered by the user in the UI.
+
+Parameters
+    node  -  a figma node
+
+Returns
+        string  -  all breakpoint classes entered in the UI for the input node.
+
+
+addCustomClasses
+
+Creates an entry in the map 'addedCustomClasses' containing the custom classes for a node
+that are entered by the user in the UI.
+
+Parameters
+    node  -  a figma node
+
+Returns
+        string  -  all custom classes entered in the UI for the input node.
+         
+
+addTagName
+
+Creates an entry in the map 'addedTagName' containing the tag name for a node
+that is entered by the user in the UI.
+
+Parameters
+    node  -  a figma node
+
+Returns
+        string  -  tag name of the input node entered by the user in UI.
+      
+
+-- UTILITY FUNCTIONS -- 
+
+
+RGBToHex
+
+Converts the rgb color values of a node from figma to hexadecimal values.
+
+Parameters
+    rgb  -  object containing r, g and b color values.
+
+Returns
+        string  -  hexadecimal color values e.g '#F3F4F6'.
